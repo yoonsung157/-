@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant User as 사용자
+    participant AlarmApp as 알람 앱
+    participant AlarmService as 알람 서비스
+    participant SystemClock as 시스템 시계
+
+    User->>AlarmApp: 알람 시간 설정 (07:00)
+    AlarmApp->>AlarmService: 알람 등록 요청 (07:00)
+    AlarmService->>SystemClock: 지정 시간 예약
+    SystemClock-->>AlarmService: 알람 예약 완료
+
+    %% 시간 경과 후 (07:00)
+    SystemClock->>AlarmService: 알람 시간 도달 알림
+    AlarmService->>AlarmApp: 알람 울림 요청
+    AlarmApp->>User: 알람 소리/진동 실행
