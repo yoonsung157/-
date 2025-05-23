@@ -1,0 +1,68 @@
+import time
+import threading
+
+# 시스템 시계를 추상화한 클래스
+class SystemClock:
+    def __init__(self):
+        self.current_time = time.strftime('%H:%M')  # 현재 시간 (24시간 형식)
+
+    def get_current_time(self):
+        return time.strftime('%H:%M')  # 현재 시간을 HH:MM 형식으로 반환
+
+# 알람 서비스 클래스
+class AlarmService:
+    def __init__(self, system_clock):
+        self.alarm_time = None
+        self.is_alarm_set = False
+        self.system_clock = system_clock  # SystemClock을 의존성으로 주입
+
+    def set_alarm(self, alarm_time):
+        """ 알람 시간을 설정 """
+        self.alarm_time = alarm_time
+        self.is_alarm_set = True
+        print(f"알람이 {alarm_time}에 설정되었습니다.")
+        # 알람 확인 스레드 시작
+        threading.Thread(target=self.check_alarm).start()
+
+    def check_alarm(self):
+        """ 알람 시간 체크 및 알람 울리기 """
+        while self.is_alarm_set:
+            current_time = self.system_clock.get_current_time()
+            print(f"현재 시간: {current_time}")
+            if current_time == self.alarm_time:
+                self.trigger_alarm()
+                break
+            time.sleep(30)  # 30초마다 시간 확인
+
+    def trigger_alarm(self):
+        """ 알람 울리기 """
+        print("알람 시간이 되었습니다! 알람이 울립니다!!!")
+        self.is_alarm_set = False  # 알람 종료
+
+# 알람 앱 클래스
+class AlarmApp:
+    def __init__(self, alarm_service):
+        self.alarm_service = alarm_service  # AlarmService 의존성 주입
+
+    def set_alarm_time(self, alarm_time):
+        """ 사용자 알람 시간 설정 """
+        self.alarm_service.set_alarm(alarm_time)
+
+# 사용자 클래스
+class User:
+    def __init__(self, alarm_app):
+        self.alarm_app = alarm_app  # AlarmApp 의존성 주입
+
+    def set_alarm(self, alarm_time):
+        """ 사용자 알람 시간 설정 """
+        self.alarm_app.set_alarm_time(alarm_time)
+
+# 메인 코드
+if __name__ == "__main__":
+    system_clock = SystemClock()  # 시스템 시계 객체 생성
+    alarm_service = AlarmService(system_clock)  # 알람 서비스 객체 생성
+    alarm_app = AlarmApp(alarm_service)  # 알람 앱 객체 생성
+    user = User(alarm_app)  # 사용자 객체 생성
+
+    alarm_time = input("알람 시간을 입력하세요 (예: 09:00): ")
+    user.set_alarm(alarm_time)  # 알람 시간 설정
